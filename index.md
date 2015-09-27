@@ -1,0 +1,101 @@
+---
+title       : Estimating Vehicle Fuel Economy
+subtitle    : A tool for consumers & manufacturers 
+author      : Jacob Schwan
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## What is it?
+
+A web application that will:
+
+1. Estimate a vehicle's combined miles per gallon (MPG) based on:
+    * Model Year
+    * Number of Cylinders
+    * Drive Type (2 or 4 wheel)
+    * Transmission Type
+    * Engine Displacement
+    * Presence of a Supercharger or Turbocharger
+
+2. Provide a list of vehicles that match the provided specifications, if any 
+exist.
+
+Play with it at: http://blackbrass88.shinyapps.io/EstimatingMPG
+
+---
+
+## Who wants it?
+
+### Consumers
+
+* Consumers care about MPG when shopping for a car but don't know what 
+specifications to look for to improve it.
+
+* This tool lets them play with the specifications and see an estimate of the
+resulting combined MPG
+
+* Once they have the specifications they like, they can see if there are any
+vehicles produced that match.
+
+### Manufacturers
+
+* Vehicle producers can use the tool to test out theoretical vehicle designs
+and determine their estimated MPG.
+
+* They will also see how much competition there is in the market for vehicles
+with similar specifications
+
+---
+
+## How was it built?
+
+* Raw data was obtained from the [FuelEconomy.gov](https://www.fueleconomy.gov/feg/ws/index.shtml)
+
+* Data from 1987 to 2016 was used to limit empty or NA variables
+
+* A generalized linear model was produced using the following code:
+
+```r
+require(caret); require(dplyr)
+modelData <- select(fuelData, -make, -model)
+inTrain <- createDataPartition(y=modelData$comb08,p=0.8,list=F)
+training <- modelData[inTrain,]
+testing <- modelData[-inTrain,]
+modelGLM <- train(comb08 ~ .,data=training,method="glm")
+```
+
+* [Data Cleaning & Model Building Script Available on GitHub](
+https://github.com/blackbrass88/DataProductsProject/blob/master/analysis.R)
+
+---
+
+## How was it built?
+
+
+```r
+modelGLM <- readRDS("../modelGLM.rds")
+modelGLM
+```
+
+```
+## Generalized Linear Model 
+## 
+## 23436 samples
+##     7 predictors
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 23436, 23436, 23436, 23436, 23436, 23436, ... 
+## Resampling results
+## 
+##   RMSE       Rsquared   RMSE SD    Rsquared SD
+##   130374397  0.6804943  646161951  0.204383   
+## 
+## 
+```
